@@ -212,9 +212,8 @@ func (r *nDCWorkflowImpl) terminateWorkflow(
 	incomingLastWriteVersion int64,
 ) error {
 
-	// TODO nDC: modify for version history
 	// do not persist the change right now, NDC requires transaction
-	r.mutableState.UpdateReplicationStateVersion(lastWriteVersion, true)
+	r.mutableState.UpdateCurrentVersion(lastWriteVersion, true)
 	_, err := r.mutableState.AddWorkflowExecutionTerminatedEvent(
 		workflowTerminationReason,
 		[]byte(fmt.Sprintf("terminated by version: %v", incomingLastWriteVersion)),

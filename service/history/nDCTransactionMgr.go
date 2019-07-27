@@ -197,11 +197,29 @@ func (r *nDCTransactionMgrImpl) backfillWorkflow(
 		return err
 	}
 
-	// TODO nDC: we need to have the ability to control whether to update
-	//  the current record, by `UpdateWorkflowMode`
+	mode := persistence.UpdateWorkflowModeUpdateCurrent
+	if !targetWorkflow.getMutableState().IsCurrentWorkflowGuaranteed() {
+		executionInfo := targetWorkflow.getMutableState().GetExecutionInfo()
+		domainID := executionInfo.DomainID
+		workflowID := executionInfo.WorkflowID
+		runID := executionInfo.RunID
+
+		currentRunID, err := r.getCurrentWorkflowRunID(
+			ctx,
+			domainID,
+			workflowID,
+		)
+		if err != nil {
+			return err
+		}
+		if currentRunID != runID {
+			mode = persistence.UpdateWorkflowModeBypassCurrent
+		}
+	}
+
 	return targetWorkflow.getContext().updateWorkflowExecutionWithNew(
 		now,
-		persistence.UpdateWorkflowModeBypassCurrent,
+		mode,
 		nil,
 		nil,
 		transactionPolicyPassive,

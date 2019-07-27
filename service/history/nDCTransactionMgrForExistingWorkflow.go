@@ -286,7 +286,16 @@ func (r *nDCTransactionMgrForExistingWorkflowImpl) suppressCurrentAndUpdateAsCur
 		}
 	}
 
-	panic("wire with workflow conflict resolution function")
+	return targetWorkflow.getContext().conflictResolveWorkflowExecution(
+		now,
+		persistence.ConflictResolveWorkflowModeUpdateCurrent,
+		targetWorkflow.getMutableState(),
+		newWorkflow.getContext(),
+		newWorkflow.getMutableState(),
+		currentWorkflow.getContext(),
+		currentWorkflow.getMutableState(),
+		nil,
+	)
 }
 
 func (r *nDCTransactionMgrForExistingWorkflowImpl) conflictResolveAsCurrent(
@@ -296,7 +305,23 @@ func (r *nDCTransactionMgrForExistingWorkflowImpl) conflictResolveAsCurrent(
 	newWorkflow nDCWorkflow,
 ) error {
 
-	panic("wire with workflow conflict resolution function")
+	var newContext workflowExecutionContext
+	var newMutableState mutableState
+	if newWorkflow != nil {
+		newContext = newWorkflow.getContext()
+		newMutableState = newWorkflow.getMutableState()
+	}
+
+	return targetWorkflow.getContext().conflictResolveWorkflowExecution(
+		now,
+		persistence.ConflictResolveWorkflowModeUpdateCurrent,
+		targetWorkflow.getMutableState(),
+		newContext,
+		newMutableState,
+		nil,
+		nil,
+		nil,
+	)
 }
 
 func (r *nDCTransactionMgrForExistingWorkflowImpl) conflictResolveAsZombie(
@@ -313,15 +338,28 @@ func (r *nDCTransactionMgrForExistingWorkflowImpl) conflictResolveAsZombie(
 		return err
 	}
 
+	var newContext workflowExecutionContext
+	var newMutableState mutableState
 	if newWorkflow != nil {
 		if err := newWorkflow.suppressWorkflowBy(
 			currentWorkflow,
 		); err != nil {
 			return err
 		}
+		newContext = newWorkflow.getContext()
+		newMutableState = newWorkflow.getMutableState()
 	}
 
-	panic("wire with workflow conflict resolution function")
+	return targetWorkflow.getContext().conflictResolveWorkflowExecution(
+		now,
+		persistence.ConflictResolveWorkflowModeBypassCurrent,
+		targetWorkflow.getMutableState(),
+		newContext,
+		newMutableState,
+		nil,
+		nil,
+		nil,
+	)
 }
 
 func (r *nDCTransactionMgrForExistingWorkflowImpl) executeTransaction(

@@ -374,7 +374,7 @@ func (s *nDCWorkflowSuite) TestSuppressWorkflowBy() {
 		s.mockClusterMetadata,
 	), nil)
 
-	s.mockMutableState.On("UpdateReplicationStateVersion", lastEventVersion, true)
+	s.mockMutableState.On("UpdateCurrentVersion", lastEventVersion, true)
 	s.mockMutableState.On("AddWorkflowExecutionTerminatedEvent", mock.Anything, mock.Anything, mock.Anything).Return(&shared.HistoryEvent{}, nil)
 	s.mockMutableState.On("AddTransferTasks", mock.MatchedBy(func(tasks []persistence.Task) bool {
 		if len(tasks) != 1 {
